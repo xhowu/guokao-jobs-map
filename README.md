@@ -5,6 +5,16 @@
 - **150,976** 个岗位 · **22,368** 个用人单位 · **5,382** 个工作地点 · **100** 个专业大类
 - 网页是**单文件自包含 HTML**（约 10 MB），下载后双击即可打开，不需要服务器、不需要联网、不依赖任何外部 CDN
 
+## 在线访问与下载
+
+| 方式 | 地址 |
+|---|---|
+| **GitHub Pages**（主要入口） | https://xhowu.github.io/guokao-jobs-map/ |
+| 在线应用（WorkBuddy 托管） | https://civil-service-jobs-map.app.workbuddy.host/ |
+| 网盘下载（中国移动云盘） | https://yun.139.com/shareweb/#/w/i/2yrhMr6bGbjd4 |
+
+GitHub Pages 由本仓库 `web/` 目录下的网页自动发布（见 `.github/workflows/pages.yml`），推送更新后会自动重新部署。仓库里不重复存放副本——工作流在构建时把它复制成 `index.html` 再上传。
+
 ## 网页能做什么
 
 | 功能 | 说明 |
@@ -27,6 +37,8 @@ data/
 └─ 进面分数汇总.json             按 年度|职位代码 聚合的分数，46,406 条
 web/
 └─ 国考岗位地图_完全版_2019-2027.html   单文件网页应用
+.github/workflows/
+└─ pages.yml                    GitHub Pages 自动发布
 scripts/
 ├─ desensitize.py               面试人员名单脱敏脚本
 └─ verify_no_pii.py             脱敏校验脚本

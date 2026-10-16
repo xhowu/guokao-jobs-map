@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+# 把 web/ 目录下的单文件网页发布为 GitHub Pages 站点。
+# 仓库里不重复存放一份 10 MB 的副本：构建时把它复制成 index.html 再上传。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 准备站点
+        run: |
+          set -e
+          mkdir -p _site
+          src=$(ls web/*.html | head -n1)
+          echo "源文件: $src"
+          cp "$src" _site/index.html
+          printf '' > _site/.nojekyll
+          ls -la _site
+          du -h _site/index.html
+
+      - name: 上传站点产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 发布到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

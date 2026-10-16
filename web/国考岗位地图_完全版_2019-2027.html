@@ -1242,14 +1242,20 @@ html[data-theme="dark"] #err-overlay{background:rgba(15,22,32,.9)}
   padding:12px 18px 14px;border-top:1px solid var(--line);background:var(--panel-2)}
 #intro .in-f .sp{flex:1 1 auto}
 #intro .in-note{font-size:11.5px;color:var(--tx-3);line-height:1.5}
-#intro .in-b .dsec p{font-size:12.5px;line-height:1.8;color:var(--tx-2);margin-bottom:5px}
-#intro .in-b .dsec ul{margin:2px 0 0;padding-left:18px}
-#intro .in-b .dsec li{font-size:12.5px;line-height:1.8;color:var(--tx-2);margin-bottom:2px}
-#intro .in-b .dsec b{color:var(--tx)}
-#intro .repo{display:inline-flex;align-items:center;gap:6px;margin-top:5px;padding:7px 11px;
+
+/* 说明类正文（数据来源 / 免责声明 / 项目地址）：弹窗与站内说明页共用同一套排版，
+   不限定在 #intro 内，保证两处观感完全一致 */
+.dsec p{font-size:12.5px;line-height:1.85;color:var(--tx-2);margin:0 0 6px}
+.dsec p:last-child{margin-bottom:0}
+.dsec ul{margin:2px 0 0;padding-left:19px}
+.dsec li{font-size:12.5px;line-height:1.85;color:var(--tx-2);margin-bottom:5px}
+.dsec li:last-child{margin-bottom:0}
+.dsec b{color:var(--tx);font-weight:700}
+.repo{display:inline-flex;align-items:center;gap:7px;margin:3px 0 2px;padding:7px 12px;
   border:1px solid var(--line-2);border-radius:9px;background:var(--panel-2);color:var(--brand);
   font-size:12.5px;font-weight:600;text-decoration:none;word-break:break-all;max-width:100%}
-#intro .repo:hover{border-color:var(--brand-2);color:var(--brand-2)}
+.repo:before{content:"↗";font-weight:400;opacity:.7;flex:0 0 auto}
+.repo:hover{border-color:var(--brand-2);color:var(--brand-2);background:var(--brand-soft)}
 
 /* 响应式 */
 @media (max-width:860px){
@@ -1309,7 +1315,9 @@ html[data-theme="dark"] #err-overlay{background:rgba(15,22,32,.9)}
   .chip{height:30px;font-size:12.5px;padding:0 10px}
   .chip.more{padding:0 10px}
   #ch-info{font-size:12.5px;line-height:1.75}
-  .dsec .h{font-size:12.5px}
+  .dsec>.h{font-size:12.5px}
+  .dsec p,.dsec li{font-size:13px;line-height:1.85}
+  .repo{font-size:13px}
   /* 悬浮卡 / 对比卡片：触摸友好 */
   #ch-tip{max-width:calc(100vw - 20px)}
   #ch-card{max-width:calc(100vw - 16px)}
@@ -1348,6 +1356,100 @@ html[data-theme="dark"] #err-overlay{background:rgba(15,22,32,.9)}
 </style>
 </head>
 <body>
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <div class="in-card">
+    <div class="in-h">
+      <div class="t">
+        <h2 id="intro-title">数据来源与免责声明</h2>
+        <p>首次进入提示 · 关闭后不再自动弹出，可随时从右上角「说明」重新查看</p>
+      </div>
+      <button class="in-x" id="intro-x" title="关闭（Esc）">✕</button>
+    </div>
+    <div class="in-b" id="intro-body"></div>
+    <div class="in-f">
+      <span class="in-note">本站为个人非营利项目，非官方渠道。</span>
+      <span class="sp"></span>
+      <button class="btn" id="intro-more">查看完整说明</button>
+      <button class="btn primary" id="intro-ok">我知道了</button>
+    </div>
+  </div>
+</div>
+<script>
+/* 数据来源 / 免责声明 / 项目地址 —— 定义在文档最前面，使「初次进入弹窗」在
+   10 MB 数据块尚未解析时就能渲染（首屏即弹出，不必对着加载动画空等）。
+   主脚本的 dataSourceHTML() / disclaimerHTML() / projectHTML() 共用这一份文案，
+   站内说明页与弹窗因此永远一致。 */
+window.__NOTICE = (function(){
+  var F = {
+    y0:2019, y1:2027, years:9, maxScoreYear:2026,
+    jobs:'150,976', units:'22,368', people:'285,825', scored:'129,393', rate:'85.7',
+    repo:'https://github.com/xhowu/guokao-jobs-map'
+  };
+  function dataSource(){
+    return '<div class="dsec"><div class="h">数据来源</div>'+
+      '<p>岗位数据：中央机关及其直属机构 '+F.y0+'–'+F.y1+' 年度考试录用公务员《招考简章》，共 '+
+        F.jobs+' 个岗位、'+F.units+' 个单位点位，招录 '+F.people+' 人。与官方公布的职位数、招录人数一致。</p>'+
+      '<p>分数线数据：'+F.y0+'–'+F.maxScoreYear+' 年度《面试人员名单》中的「最低面试分数、进入面试人数、最高分」，'+
+        '按「年度 + 职位代码」关联到岗位，共关联 '+F.scored+' 条（覆盖率 '+F.rate+'%）'+
+        (F.maxScoreYear<F.y1 ? '；'+F.y1+' 年度面试尚未进行，暂无分数线' : '')+'。</p>'+
+      '<p>地图底图与坐标：地名匹配采用 GCJ-02 坐标系，行政区域中心点取自公开区划数据，单位点位来自地图地点搜索；'+
+        '每条岗位详情中的「匹配精度」会标明该点属于单位 POI 精确点位还是省 / 市 / 区县中心点。</p>'+
+      '</div>';
+  }
+  function disclaimer(){
+    return '<div class="dsec"><div class="h">免责声明</div><ul>'+
+      '<li>本站是<b>个人整理的非营利性可视化项目，非官方渠道</b>，与任何招录机关无关。</li>'+
+      '<li>数据由程序自动整理，可能存在解析误差、遗漏或表述偏差，请以官方发布内容为准。</li>'+
+      '<li>「最低面试分数」指的是该职位进面考生的最低分（即通常说的进面分数线），<b>不是录用分数、不是总成绩</b>。</li>'+
+      '<li>跨年度「同岗」是算法推断结果：报考条件一致的标为<b>基本同岗</b>，条件不完全一致的标为<b>同单位类岗</b>（图上以浅色点标出），仅作参考，<b>不构成任何断言</b>。</li>'+
+      '<li>本页所有内容<b>仅供参考，不作为报考依据</b>；报考资格、职位条件、分数线等请以官方发布为准。</li>'+
+      '<li>本站<b>不包含任何考生个人信息</b>：原始面试人员名单中的「姓名」「准考证号」两列已在整理前删除。</li>'+
+      '</ul></div>';
+  }
+  function project(){
+    return '<div class="dsec"><div class="h">项目地址</div>'+
+      '<p>数据原始文件、脱敏脚本与本页源码均托管在 GitHub：</p>'+
+      '<a class="repo" href="'+F.repo+'" target="_blank" rel="noopener">'+F.repo+'</a>'+
+      '<p style="margin-top:7px">仓库内含：'+F.years+' 个年度的招考简章、8 个年度<b>已脱敏</b>的面试人员名单、'+
+        '聚合后的进面分数，以及脱敏与脱敏校验脚本。本页是一个单文件自包含 HTML，下载后双击即可离线使用。</p>'+
+      '</div>';
+  }
+  return { F:F, dataSource:dataSource, disclaimer:disclaimer, project:project,
+           all:function(){ return dataSource()+disclaimer()+project(); } };
+})();
+(function(){
+  var KEY='gk_intro_seen_v1';
+  var el=document.getElementById('intro');
+  if(!el) return;
+  function seen(){ try{ return localStorage.getItem(KEY)==='1'; }catch(e){ return false; } }
+  function mark(){ try{ localStorage.setItem(KEY,'1'); }catch(e){} }
+  function show(){
+    document.getElementById('intro-body').innerHTML = window.__NOTICE.all();
+    el.classList.add('show');
+    var ok=document.getElementById('intro-ok');
+    if(ok) setTimeout(function(){ try{ ok.focus(); }catch(e){} }, 80);
+  }
+  function hide(){
+    if(!el.classList.contains('show')) return;
+    el.classList.remove('show'); mark();
+  }
+  window.__intro = { show:show, hide:hide, seen:seen, KEY:KEY };
+  var x=document.getElementById('intro-x'); if(x) x.onclick=hide;
+  var ok=document.getElementById('intro-ok'); if(ok) ok.onclick=hide;
+  var more=document.getElementById('intro-more');
+  if(more) more.onclick=function(){
+    hide();
+    if(window.__gk && window.__gk.openAbout) window.__gk.openAbout();
+    else window.__wantAbout = true;   /* 主脚本就绪后补开说明页 */
+  };
+  el.addEventListener('click', function(e){
+    var card=e.target.closest ? e.target.closest('.in-card') : null;
+    if(!card) hide();
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') hide(); });
+  if(!seen()) show();   /* 数据解析开始之前就弹出 */
+})();
+</script>
 <div id="app">
 
   <header id="header">
@@ -1475,24 +1577,6 @@ html[data-theme="dark"] #err-overlay{background:rgba(15,22,32,.9)}
 <div id="chip-panel" role="dialog" aria-label="已选条件"></div>
 <div id="ch-tip" class="ct-box" role="tooltip"></div>
 <div id="ch-card" class="ct-box" role="dialog" aria-label="分数点对比卡片"></div>
-<div id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
-  <div class="in-card">
-    <div class="in-h">
-      <div class="t">
-        <h2 id="intro-title">数据来源与免责声明</h2>
-        <p>首次进入提示 · 关闭后不再自动弹出，可随时从右上角「说明」重新查看</p>
-      </div>
-      <button class="in-x" id="intro-x" title="关闭（Esc）">✕</button>
-    </div>
-    <div class="in-b" id="intro-body"></div>
-    <div class="in-f">
-      <span class="in-note">本站为个人非营利项目，非官方渠道。</span>
-      <span class="sp"></span>
-      <button class="btn" id="intro-more">查看完整说明</button>
-      <button class="btn primary" id="intro-ok">我知道了</button>
-    </div>
-  </div>
-</div>
 
 <script>/* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -4357,6 +4441,7 @@ function Raw_ok(RAW){ return RAW; }
 
 function init(RAW){
   try{ initData(RAW); }catch(e){ fatal('建立索引时出错：'+e.message); return; }
+  syncFacts();                       /* 解析完成 → 用实际数据校准说明文案里的数字 */
   try{
     fillDrawer();
     fillYearSelect();
@@ -4364,9 +4449,9 @@ function init(RAW){
     loadBasemap(0,false);
     applyFilter();
   }catch(e){ fatal('初始化界面时出错：'+e.message); return; }
+  /* 早期脚本里点了「查看完整说明」但那时主脚本还没就绪 → 现在补开说明页 */
+  if(window.__wantAbout){ window.__wantAbout=false; try{ openAbout(); }catch(e){} }
   setTimeout(function(){ document.getElementById('loading').classList.add('hide'); }, 420);
-  /* 首次进入弹出「数据来源 / 免责声明 / 项目地址」，关闭后写入 localStorage 不再自动弹出 */
-  if(!introSeen()) setTimeout(showIntro, 700);
   setTimeout(function(){
     hint('滚轮缩放切换「省份 → 城市 → 区县 → 单位 / 岗位」；点「筛选」可按专业、性别、经验等维度收敛', 6200);
   }, 1300);
@@ -6871,83 +6956,32 @@ document.getElementById('btn-about').onclick=openAbout;
    数据来源 / 免责声明 / 项目地址
    同一份文案供「初次进入弹窗」与「站内说明页」共用，避免两处表述不一致
    ========================================================= */
-var REPO_URL = 'https://github.com/xhowu/guokao-jobs-map';
-function dataSourceHTML(){
-  var y0=YEARS[0], y1=YEARS[YEARS.length-1];
-  var maxScoreYear=0;
-  for(var qi=0; qi<J.length; qi++){ if(jScore(J[qi])>=0){ var yy=jYear(J[qi]); if(yy>maxScoreYear) maxScoreYear=yy; } }
-  return '<div class="dsec"><div class="h">数据来源</div>'+
-    '<p>岗位数据：中央机关及其直属机构 '+y0+'–'+y1+' 年度考试录用公务员《招考简章》，共 '+
-      fmt(J.length)+' 个岗位、'+fmt(UNITS.length)+' 个单位点位，招录 '+fmt(META.people)+' 人。与官方公布的职位数、招录人数一致。</p>'+
-    '<p>分数线数据：'+y0+'–'+maxScoreYear+' 年度《面试人员名单》中的「最低面试分数、进入面试人数、最高分」，'+
-      '按「年度 + 职位代码」关联到岗位，共关联 '+fmt(META.scored)+' 条（覆盖率 '+(META.scored/META.total*100).toFixed(1)+'%）'+
-      (maxScoreYear<y1? '；'+y1+' 年度面试尚未进行，暂无分数线' : '')+'。</p>'+
-    '<p>地图底图与坐标：地名匹配采用 GCJ-02 坐标系，行政区域中心点取自公开区划数据，单位点位来自地图地点搜索；'+
-      '每条岗位详情中的「匹配精度」会标明该点属于单位 POI 精确点位还是省 / 市 / 区县中心点。</p>'+
-    '</div>';
-}
-function disclaimerHTML(){
-  return '<div class="dsec"><div class="h">免责声明</div><ul>'+
-    '<li>本站是<b>个人整理的非营利性可视化项目，非官方渠道</b>，与任何招录机关无关。</li>'+
-    '<li>数据由程序自动整理，可能存在解析误差、遗漏或表述偏差，请以官方发布内容为准。</li>'+
-    '<li>「最低面试分数」指的是该职位进面考生的最低分（即通常说的进面分数线），<b>不是录用分数、不是总成绩</b>。</li>'+
-    '<li>跨年度「同岗」是算法推断结果：报考条件一致的标为<b>基本同岗</b>，条件不完全一致的标为<b>同单位类岗</b>（图上以浅色点标出），仅作参考，<b>不构成任何断言</b>。</li>'+
-    '<li>本页所有内容<b>仅供参考，不作为报考依据</b>；报考资格、职位条件、分数线等请以官方发布为准。</li>'+
-    '<li>本站<b>不包含任何考生个人信息</b>：原始面试人员名单中的「姓名」「准考证号」两列已在整理前删除。</li>'+
-    '</ul></div>';
-}
-function projectHTML(){
-  return '<div class="dsec"><div class="h">项目地址</div>'+
-    '<p>数据原始文件、脱敏脚本与本页源码均托管在 GitHub：</p>'+
-    '<a class="repo" href="'+REPO_URL+'" target="_blank" rel="noopener">'+REPO_URL+'</a>'+
-    '<p style="margin-top:7px">仓库内含：'+YEARS.length+' 个年度的招考简章、'+
-      '8 个年度<b>已脱敏</b>的面试人员名单、聚合后的进面分数，以及脱敏与脱敏校验脚本。'+
-      '本页是一个单文件自包含 HTML，下载后双击即可离线使用。</p>'+
-    '</div>';
-}
-/* 弹窗正文 = 精简版数据来源 + 免责声明 + 项目地址 */
-function introBodyHTML(){
-  return dataSourceHTML() + disclaimerHTML() + projectHTML();
+/* 数据来源 / 免责声明 / 项目地址：文案定义在文档最前面的 window.__NOTICE 里，
+   这里直接复用，保证「初次进入弹窗」与「站内说明页」永远一致 */
+var REPO_URL = window.__NOTICE.F.repo;
+function dataSourceHTML(){ return window.__NOTICE.dataSource(); }
+function disclaimerHTML(){ return window.__NOTICE.disclaimer(); }
+function projectHTML(){ return window.__NOTICE.project(); }
+function introBodyHTML(){ return window.__NOTICE.all(); }
+
+/* 解析完成后用实际数据校准文案里的数字（弹窗早已按常量渲染，说明页取到的是校准值） */
+function syncFacts(){
+  try{
+    var F = window.__NOTICE.F;
+    F.jobs = fmt(J.length); F.units = fmt(UNITS.length);
+    F.people = fmt(META.people); F.scored = fmt(META.scored);
+    F.rate = (META.scored/META.total*100).toFixed(1);
+    F.y0 = YEARS[0]; F.y1 = YEARS[YEARS.length-1]; F.years = YEARS.length;
+    var my=0; for(var qi=0; qi<J.length; qi++){ if(jScore(J[qi])>=0){ var yy=jYear(J[qi]); if(yy>my) my=yy; } }
+    if(my) F.maxScoreYear = my;
+  }catch(e){}
 }
 
-/* 初次进入弹窗：只在首次访问时自动弹出，关闭后记入 localStorage */
-var INTRO_KEY = 'gk_intro_seen_v1';
-function introSeen(){
-  try{ return localStorage.getItem(INTRO_KEY)==='1'; }catch(e){ return false; }
-}
-function markIntroSeen(){
-  try{ localStorage.setItem(INTRO_KEY,'1'); }catch(e){}
-}
-function showIntro(){
-  var el=document.getElementById('intro');
-  if(!el) return;
-  document.getElementById('intro-body').innerHTML = introBodyHTML();
-  el.classList.add('show');
-  var ok=document.getElementById('intro-ok');
-  if(ok) setTimeout(function(){ try{ ok.focus(); }catch(e){} }, 80);
-}
-function hideIntro(){
-  var el=document.getElementById('intro');
-  if(!el || !el.classList.contains('show')) return;
-  el.classList.remove('show');
-  markIntroSeen();
-}
-(function(){
-  var el=document.getElementById('intro');
-  if(!el) return;
-  var x=document.getElementById('intro-x'); if(x) x.onclick=function(){ hideIntro(); };
-  var ok=document.getElementById('intro-ok'); if(ok) ok.onclick=function(){ hideIntro(); };
-  var more=document.getElementById('intro-more');
-  if(more) more.onclick=function(){ hideIntro(); openAbout(); };
-  /* 点遮罩（卡片之外的区域）关闭 */
-  el.addEventListener('click', function(e){
-    var card=e.target.closest ? e.target.closest('.in-card') : null;
-    if(!card) hideIntro();
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key==='Escape') hideIntro();
-  });
-})();
+/* 弹窗的显示/隐藏委托给文档最前面那个早期脚本（它已负责首次弹出） */
+var INTRO_KEY = window.__intro.KEY;
+function introSeen(){ return window.__intro.seen(); }
+function showIntro(){ window.__intro.show(); }
+function hideIntro(){ window.__intro.hide(); }
 
 function aboutHTML(){
   var ser = seriesOf(curFiltered);
@@ -7021,6 +7055,7 @@ try{
     document.getElementById('theme-ic').textContent = th==='dark'?'☀️':'🌙'; }
 }catch(e){}
 
+/* 首次进入弹窗已由文档最前面的早期脚本在数据解析前弹出（见 body 开头的 __NOTICE/__intro） */
 boot();
 
 /* 调试 / 二次开发钩子（数据引用用 getter，保证 initData 填充后仍可见） */
